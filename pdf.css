@@ -1,0 +1,36 @@
+.head {
+    width: 100%;
+    margin-bottom: 40px;
+}
+h1 {
+text-align: center;
+position: relative;
+}
+h2{
+text-align: center;
+}
+
+.accounts-table {
+    margin-top: 50px;
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+}
+.accounts-table tr th {
+    border: 1px solid #000; /* TH BORDER COLOR */
+    text-align: left;
+    padding: 8px;
+}
+.accounts-table tr td{
+    border: 1px solid #000; /* TD BORDER COLOR */
+    text-align: left;
+    padding:8px;
+}
+/* .accounts-table tr:nth-child(even){
+     background-color: #dddddd; COLOR NG BOXES
+} */
+
+
+
+
+

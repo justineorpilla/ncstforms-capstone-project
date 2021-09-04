@@ -1,0 +1,551 @@
+<?php 
+require('./conn.php');
+session_start();
+
+if (empty($_SESSION['id']) && empty($_SESSION['user_name'])) {
+  echo "<script>window.open('index.php', '_self')</script>";
+}elseif($_SESSION['type']!='hr'){
+  echo "<script>window.open('index.php', '_self')</script>";
+}else{
+  $realName = $_SESSION['name'];
+}
+    
+?>
+
+<?php 
+    $name = $_SESSION['name'];
+    $query = "SELECT * FROM `pending-user`;";
+    $sql = mysqli_query($connection, $query);
+?>
+
+
+<?php //ADD BUTTON
+    if(isset($_POST['accept'])){ 
+        $fname = $_POST['accept_firstname'];
+        $lname = $_POST['accept_lastname'];
+        $name = $fname." ".$lname;
+        $empId = $_POST['accept_eid'];
+        $user_name = $empId;
+        $pass = $_POST['accept_password'];
+        $role = "employee";
+        $dept = $_POST['accept_department'];
+        $pos = $_POST['accept_position'];
+        $email = $_POST['accept_email'];
+        $address = $_POST['accept_address'];
+        $contact = $_POST['accept_contact'];
+        $msg = "This account was created by this User.";
+        $deleteAcceptedId=$_POST['accept_id'];
+
+$to_email = 'simbajon.jk@gmail.com';
+$subject = 'NCST Forms Account';
+$message = 'This mail is sent using the PHP mail function';
+$headers = 'From: noreply-ncstforms @ company . com';
+
+        $add = "INSERT INTO `user` (`firstname`,`lastname`,`name`,`user_name`,`password`,`role`,`department`,`position`,`email`,`employee_id`,`address`,`contact`,`created_msg`) 
+        VALUES ('$fname','$lname','$name','$user_name','$pass','$role','$dept','$pos','$email','$empId','$address','$contact','$msg')";
+        
+        $addQuery=mysqli_query($connection, $add);
+        
+        $deleteAccepted="DELETE FROM `pending-user` WHERE id=$deleteAcceptedId;";
+        $deleteAcceptedQuery=mysqli_query($connection,$deleteAccepted);
+        
+        if($addQuery) {
+            // if($deleteAcceptedQuery)
+            mail($to_email,$subject,$message,$headers);
+            $_SESSION['status'] = "Account Successfully Approve!";
+            $_SESSION['status_code'] = "success";
+            header('Location: Admin-pendingEmployees.php');
+            exit(0);
+        }else{
+            $_SESSION['status'] = "Account Not Successfully Approve!";
+            $_SESSION['status_code'] = "error";
+            header('Location: Admin-pendingEmployees.php');
+        }
+    }
+?>
+
+<?php //DELETE BUTTON 
+if (isset($_POST['delete'])) 
+{
+
+     $deleteId=$_POST['delete_id'];
+     
+    $delete="DELETE FROM `pending-user` WHERE id=$deleteId;";
+    $deleteQuery=mysqli_query($connection,$delete);
+       
+    if($deleteQuery){
+      $_SESSION['status'] = "Account has been Deleted!";
+      $_SESSION['status_code'] = "success";
+      header('Location: Admin-pendingEmployees.php');
+      exit(0);
+
+    }else{
+      $_SESSION['status'] = "Account Not Deleted";
+      $_SESSION['status_code'] = "error";
+      header('Location: Admin-pendingEmployees.php');
+    }   
+}
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+<!--===============================================================================================-->	
+<link rel="icon" type="image/png" href="images/NCST.png"/>
+<!--===============================================================================================-->
+    
+  <title>NCST Admin</title>
+
+  <!-- Custom fonts for this template -->
+  <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+
+  <!-- Custom styles for this template -->
+  <link href="css/sb-admin-2.min.css" rel="stylesheet">
+
+  <!-- Custom styles for this page -->
+  <link href="vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
+
+</head>
+
+<body id="page-top">
+
+  <!-- Page Wrapper -->
+  <div id="wrapper">
+
+  <!-- SIDE BAR ====================================================================================================-->
+     <!-- Sidebar -->
+     <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+
+<!-- Sidebar - Brand -->
+<a class="sidebar-brand d-flex align-items-center justify-content-center" href="Admin-home.php">
+  <div class="sidebar-brand-icon">
+     <img class="sidebar-logo" src="img/NCST.png">
+  </div>
+    <div class="sidebar-brand-text mx-3" style="color:yellow">NCST <sup style="color:midnightblue">ADMIN</sup></div>
+</a>
+
+<!-- Divider -->
+<hr class="sidebar-divider my-0">
+
+<!-- Nav Item - Dashboard -->
+<li class="nav-item">
+  <a class="nav-link" href="Admin-home.php">
+    <i class="fas fa-fw fa-home"></i>
+    <span>Dashboard</span></a>
+</li>
+
+<!-- Divider -->
+<hr class="sidebar-divider">
+
+<!-- Heading -->
+<div class="sidebar-heading">
+  Interface
+</div>
+
+<!-- Nav Item - Pages Collapse Menu -->
+<li class="nav-item active">
+  <a class="nav-link" href="#" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
+    <i class="fas fa-fw fa-cog"></i>
+    <span>Manage</span>
+  </a>
+  <div id="collapseTwo" class="collapse show" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+    <div class="bg-white py-2 collapse-inner rounded">
+      <h6 class="collapse-header">Manage:</h6>
+
+        <a class="collapse-item active" href="Admin-pendingEmployees.php"><i class="fas fa-user-clock"></i> Pending Users</a>
+        <a class="collapse-item" href="Admin-employees.php"><i class="fas fa-fw fa-users"></i> Employees</a>
+        <a class="collapse-item" href="Admin-users.php"><i class="fas fa-user-lock"></i> Users</a>
+        <a class="collapse-item" href="Admin-department.php"><i class="fa fa-list"></i> Departments</a>
+        <a class="collapse-item" href="Admin-position.php"><i class="fas fa-briefcase"></i> Positions</a>
+    </div>
+  </div>
+</li>
+
+<!-- Nav Item - Utilities Collapse Menu -->
+<li class="nav-item">
+  <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUtilities" aria-expanded="true" aria-controls="collapseUtilities">
+    <i class="fas fa-fw fa-wrench"></i>
+    <span>Settings</span>
+  </a>
+  <div id="collapseUtilities" class="collapse" aria-labelledby="headingUtilities" data-parent="#accordionSidebar">
+    <div class="bg-white py-2 collapse-inner rounded">
+      <h6 class="collapse-header">Settings:</h6>
+<!--      <a class="collapse-item" href=""><i class="fas fa-fw fa-file-export"></i> Leave Type</a>-->
+            <a class="collapse-item" href=""><i class="fas fa-fw fa-user"></i> My Account</a>
+    </div>
+  </div>
+</li>
+
+<!-- Divider -->
+<hr class="sidebar-divider">
+
+<!-- Heading -->
+<div class="sidebar-heading">
+  SERVICES
+</div>
+
+<!-- Nav Item - Pages Collapse Menu -->
+<li class="nav-item">
+  <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePages" aria-expanded="true" aria-controls="collapsePages">
+    <i class="fas fa-fw fa-clock"></i>
+    <span> Pending Forms</span>
+  </a>
+  <div id="collapsePages" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
+    <div class="bg-white py-2 collapse-inner rounded">
+      <h6 class="collapse-header">Forms:</h6>
+      <?php require("sidebar-pendingForms.php"); ?>
+      <div class="collapse-divider"></div>
+    </div>
+  </div>
+</li>
+
+
+<!-- Nav Item - Tables -->
+<li class="nav-item">
+  <a class="nav-link" href="Admin-tables.php">
+          <i class="fas fa-fw fa-table"></i>
+    <span>Form Reports</span></a>
+</li>
+
+<!-- Divider -->
+<hr class="sidebar-divider d-none d-md-block">
+
+<!-- Sidebar Toggler (Sidebar) -->
+<div class="text-center d-none d-md-inline">
+  <button class="rounded-circle border-0" id="sidebarToggle"></button>
+</div>
+
+</ul>
+<!-- End of Sidebar -->
+<!-- END SIDE BAR ================================================================================================-->
+  <!-- NAVBAR -->
+  <?php require('./Admin-navbar.php'); ?>
+
+        <!-- Begin Page Content -->
+        <div class="container-fluid">
+
+          <!-- Page Heading -->
+          <!-- <h1 class="h3 mb-2 text-gray-800">Employees</h1> -->
+          <!-- <h5>Admin name: <?php echo $realName;?></h5>
+          -->
+
+          <!-- DataTales Example -->
+          <div class="card shadow mb-4">
+            <div class="card-header py-3">
+              <h6 class="h4 m-0 font-weight-bold text-primary">Pending Employees User Accounts
+<!-- Button trigger modal -->          
+<!-- <span class="float:right"><button type="button" class="btn btn-primary mb-2 float-right" data-toggle="modal" data-target="#employeeModal">
+<i class="fa fa-plus"></i> Add Employee
+</button></span> -->
+<!-- Modal -->
+
+<!-- END Modal -->
+              </h6>
+            </div>
+
+<style>
+td {
+  color: black;
+}
+</style>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
+                  <thead class="thead-dark">
+                    <tr>
+                      <th>Employee ID</th>
+                      <th>Name</th>
+                      <th>Department</th>
+                      <th>Position</th>
+                      <th><center>Action</center></th>
+                    </tr>
+                  </thead>
+                  <tfoot>
+                    <tr>
+                      <th>Employee ID</th>
+                      <th>Name</th>
+                      <th>Department</th>
+                      <th>Position</th>
+                      <th><center>Action</center></th>
+                    </tr>
+                  </tfoot>
+                  <tbody>
+                   
+  <?php 
+      while($row = mysqli_fetch_array($sql)) {  
+  ?>
+
+    <tr>
+      <td><b><?php echo $row['employee_id']; ?></b></td>
+      <td><b><?php echo $row['lastname']; echo ", "; echo $row['firstname'] ?></b></td>
+      <td><b><?php echo $row['department'] ?></b></td>
+      <td><b><?php echo $row['position'] ?></b></td>
+      <td>
+      
+<!-- ACCEPT BUTTON -->
+        <button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#accept<?php echo $row['id']; ?>">
+          <!-- Accept</button> -->
+          <i class="fas fa-user-check"></i></button>
+<!-- STARTING ACCEPT BTN Modal ====================================================================================-->
+<?php 
+$emp = $row['employee_id'];
+$fname = $row['firstname'];
+$lname = $row['lastname'];
+$name = $fname." ".$lname;
+$email = $row['email'];
+$home = $row['address'];
+$num = $row['contact'];
+$dept = $row['department'];
+$pos = $row['position'];
+$pass = $row['password'];
+?>
+<div class="modal" id="accept<?php echo $row['id']; ?>" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Approve Confirmation</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+      <form action="Admin-pendingEmployees.php" method="post">
+        <div class="container-fluid">
+        <input type="hidden" name="accept_id" value="<?php echo $row['id']; ?>">
+        <input type="hidden" name="accept_eid" value="<?php echo $emp; ?>">
+        <input type="hidden" name="accept_firstname" value="<?php echo $fname; ?>">
+        <input type="hidden" name="accept_lastname" value="<?php echo $lname; ?>">
+        <input type="hidden" name="accept_name" value="<?php echo $name; ?>">
+        <input type="hidden" name="accept_email" value="<?php echo $email; ?>">
+        <input type="hidden" name="accept_address" value="<?php echo $home; ?>">
+        <input type="hidden" name="accept_contact" value="<?php echo $num; ?>">
+        <input type="hidden" name="accept_department" value="<?php echo $dept; ?>">
+        <input type="hidden" name="accept_position" value="<?php echo $pos; ?>">
+        <input type="hidden" name="accept_password" value="<?php echo $pass; ?>">
+            <div class="form-group">
+            <center>
+            <h5>Are you sure you want to approve this Account?</h5>
+            <small style="color: green;"><i>(Note: This pending Account will be accepted and registered into User Employees)</i></small>
+            </center>
+            </div>
+        </div>
+
+        </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <input type="submit" class="btn btn-success" id="accept" name="accept" value="Accept">
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ENDING ACCEPT BTN Modal ======================================================================================-->
+<!-- =================================================================================================================-->
+
+ <!-- DELETE BUTTON -->
+ <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#delete<?php echo $row['id']; ?>">
+          <!-- <i class="fas fa-trash-alt"></i></button> -->
+          <!-- <i class="fas fa-times"></i></button> -->
+          <i class="fas fa-user-times"></i></button>
+  <!-- STARTING DELETE BTN MODAL ============================================================================================ -->
+  <div class="modal" id="delete<?php echo $row['id']; ?>" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Delete Confirmation</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+      <form action="Admin-pendingEmployees.php" method="post">
+        <div class="container-fluid">
+        <input type="hidden" name="delete_id" value="<?php echo $row['id']; ?>">
+            <div class="form-group">
+            <h5>Are you sure you want to reject this Account?</h5>
+            <small style="color: red;"><i>(Note: This pending Account will be deleted and will not be register)</i></small>
+            </div>
+        </div>
+
+        </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <input type="submit" class="btn btn-danger" id="delete" name="delete" value="Reject">
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ENDING DELETE BTN MODAL ============================================================================================ -->
+<!-- =================================================================================================================-->
+
+
+
+<!-- VIEW/INFO BUTTON -->
+         <button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#view<?php echo $row['id']; ?>">
+         <!-- <i class="fas fa-info-circle"></i></button> -->
+         <i class="fas fa-question-circle"></i></button>
+<!-- STARTING VIEW/INFO BTN Modal ====================================================================================-->
+
+<div class="modal fade" id="view<?php echo $row['id'];?>" tabindex="-1" role="dialog" arialabelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Employee Details</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body"> <!-- MODAL BODY -->
+
+      <div class="container-fluid">
+	<div class="col-lg-12">
+		<div class="row">
+			<div class="col-md-6">
+				<p style="align:left;">Name: <b><?php echo ucwords($name) ?></b></p>
+				<p>Address: <b><?php echo ucwords($home) ?></b></p>
+        <p>Email: <b><?php echo $email ?></b></p>
+				<p>Contact #: <b><?php echo $num ?></b></p>
+			</div>
+			<div class="col-md-6">
+        <p>Employee ID: <b><?php echo $emp ?></b></p>
+				<p>Department: <b><?php echo ucwords($dept) ?></b></p>
+				<p>Position: <b><?php echo ucwords($pos) ?></b></p>
+			</div>
+		</div>
+    </div>
+    </div>
+		<hr>
+    <div class="col-lg-12">
+    <div class="col">
+        <!-- <p>Leave Balance: <b>10</b></p> -->
+        <small style="color:red;">Note: This account was registered by the User and requesting for Admin approval</small>
+			</div>
+    </div>  
+        
+      </div> <!-- END DIV MODAL BODY -->
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+        
+    </form>
+          
+    </div>
+  </div>
+</div>
+<!-- ENDING VIEW/INFO BTN Modal ======================================================================================-->
+<!-- =================================================================================================================-->
+        
+      </td>
+     
+    </tr>
+  <?php   } ?>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <!-- /.container-fluid -->
+
+      </div>
+      <!-- End of Main Content -->
+
+      <!-- Footer -->
+      <footer class="sticky-footer bg-white">
+        <div class="container my-auto">
+          <div class="copyright text-center my-auto">
+            <span>&copy; National College of Science and Technology 2020</span>
+              
+          </div>
+        </div>
+      </footer>
+      <!-- End of Footer -->
+
+    </div>
+    <!-- End of Content Wrapper -->
+
+  </div>
+  <!-- End of Page Wrapper -->
+
+  <!-- Scroll to Top Button-->
+  <a class="scroll-to-top rounded" href="#page-top">
+    <i class="fas fa-angle-up"></i>
+  </a>
+
+  <!-- Logout Modal-->
+  <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
+          <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">×</span>
+          </button>
+        </div>
+        <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
+        <div class="modal-footer">
+           <form action="/k/logout.php" method="post">
+          <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+<!--          <a class="btn btn-primary" href="/k/login.php">Logout</a>-->
+        
+            
+                <input class="btn btn-primary" type="submit" value="Logout"/>
+            </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap core JavaScript-->
+  <script src="vendor/jquery/jquery.min.js"></script>
+  <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Core plugin JavaScript-->
+  <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
+
+  <!-- Custom scripts for all pages-->
+  <script src="js/sb-admin-2.min.js"></script>
+
+  <!-- Page level plugins -->
+  <script src="vendor/datatables/jquery.dataTables.min.js"></script>
+  <script src="vendor/datatables/dataTables.bootstrap4.min.js"></script>
+
+  <!-- Page level custom scripts -->
+  <script src="js/demo/datatables-demo.js"></script>
+  
+ 
+
+ <!-- SWEET ALERT -->
+ <script src="js/sweetalert.min.js"></script>
+  <?php 
+      if(isset($_SESSION['status']) && $_SESSION['status'] !='')
+      {
+        ?>
+         <script>
+        swal({
+          title: "<?php echo $_SESSION['status']; ?>",
+          // text: "You clicked the button!",
+          icon: "<?php echo $_SESSION['status_code']; ?>",
+          button: "Close",
+
+        });
+         </script>
+  <?php 
+      unset($_SESSION['status']);
+      }
+  ?>
+</body>
+
+</html>
